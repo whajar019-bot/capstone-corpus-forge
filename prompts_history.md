@@ -1,0 +1,6 @@
+# Prompt History
+
+This file documents all prompts used with VS Code Copilot during development.
+
+## database.py
+Promt N.1 - I am building a Flask web application called Corpus Forge for my EPITA university capstone project. It is an AI-powered document knowledge platform. I need you to write the contents of a file called database.py. This file manages a SQLite database called corpus_forge.db. It needs three tables: 1) documents table with columns: id (primary key), filename (text), filetype (text), content (full text of the document), upload_date (text), is_active (integer, 0 or 1). 2) artifacts table with columns: id (primary key), type (text, can be 'flashcard', 'quiz', or 'code_review'), content (text, stored as JSON string), document_id (integer, foreign key to documents), created_date (text). 3) usage table with columns: id (primary key), request_count (integer), token_count (integer), timestamp (text). Write functions to: insert a document, get all documents, get active documents, toggle a document active or inactive, delete a document, insert an artifact, get all artifacts by type, insert a usage record, and get total usage counts. Use only the sqlite3 library which comes built into Python, no other libraries needed, please.
