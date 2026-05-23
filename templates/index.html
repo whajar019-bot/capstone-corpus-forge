@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Corpus Forge</title>
+	<style>
+		:root {
+			--bg: #f4f7fb;
+			--panel: #ffffff;
+			--text: #1f2937;
+			--muted: #6b7280;
+			--primary: #0f766e;
+			--primary-soft: #ccfbf1;
+			--danger: #b91c1c;
+			--ok: #166534;
+			--wrong: #b91c1c;
+			--border: #d1d5db;
+			--shadow: 0 8px 24px rgba(15, 118, 110, 0.1);
+			--radius: 14px;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+			color: var(--text);
+			background:
+				radial-gradient(circle at 100% 0%, #ccfbf1 0%, transparent 45%),
+				radial-gradient(circle at 0% 100%, #dbeafe 0%, transparent 35%),
+				var(--bg);
+			min-height: 100vh;
+		}
+
+		.container {
+			max-width: 1100px;
+			margin: 0 auto;
+			padding: 24px;
+		}
+
+		header {
+			margin-bottom: 20px;
+		}
+
+		h1 {
+			margin: 0;
+			font-size: 2rem;
+			letter-spacing: 0.02em;
+		}
+
+		.subtitle {
+			margin-top: 8px;
+			color: var(--muted);
+		}
+
+		.grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+			gap: 16px;
+		}
+
+		section {
+			background: var(--panel);
+			border: 1px solid var(--border);
+			border-radius: var(--radius);
+			padding: 16px;
+			box-shadow: var(--shadow);
+		}
+
+		section h2 {
+			margin-top: 0;
+			margin-bottom: 12px;
+			font-size: 1.15rem;
+		}
+
+		.row {
+			display: flex;
+			gap: 8px;
+			flex-wrap: wrap;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		input[type="text"],
+		input[type="number"],
+		select,
+		button,
+		textarea {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 10px 12px;
+			font-size: 0.95rem;
+		}
+
+		input[type="text"],
+		textarea {
+			width: 100%;
+		}
+
+		textarea {
+			min-height: 120px;
+			resize: vertical;
+			line-height: 1.4;
+			background: #f9fafb;
+		}
+
+		button {
+			cursor: pointer;
+			background: var(--primary);
+			color: #fff;
+			border: none;
+			transition: transform 0.08s ease, filter 0.2s ease;
+		}
+
+		button:hover {
+			filter: brightness(1.04);
+		}
+
+		button:active {
+			transform: translateY(1px);
+		}
+
+		button.secondary {
+			background: #334155;
+		}
+
+		button.danger {
+			background: var(--danger);
+		}
+
+		.list {
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			max-height: 260px;
+			overflow: auto;
+		}
+
+		.doc-item {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 10px;
+			display: flex;
+			justify-content: space-between;
+			gap: 8px;
+			align-items: center;
+			background: #fff;
+		}
+
+		.doc-meta {
+			display: flex;
+			flex-direction: column;
+			gap: 2px;
+			min-width: 0;
+		}
+
+		.doc-name {
+			font-weight: 600;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			max-width: 220px;
+		}
+
+		.badge {
+			display: inline-block;
+			padding: 3px 8px;
+			border-radius: 999px;
+			font-size: 0.75rem;
+			font-weight: 600;
+			color: #14532d;
+			background: #dcfce7;
+		}
+
+		.badge.inactive {
+			color: #9f1239;
+			background: #ffe4e6;
+		}
+
+		.doc-actions {
+			display: flex;
+			gap: 6px;
+			flex-wrap: wrap;
+			justify-content: flex-end;
+		}
+
+		.output {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 12px;
+			min-height: 90px;
+			background: #f9fafb;
+			white-space: pre-wrap;
+			line-height: 1.45;
+		}
+
+		.cards {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+			gap: 10px;
+		}
+
+		.flashcard {
+			perspective: 1000px;
+			min-height: 150px;
+			cursor: pointer;
+		}
+
+		.flashcard-inner {
+			position: relative;
+			width: 100%;
+			height: 100%;
+			min-height: 150px;
+			transition: transform 0.45s ease;
+			transform-style: preserve-3d;
+		}
+
+		.flashcard.flipped .flashcard-inner {
+			transform: rotateY(180deg);
+		}
+
+		.flashcard-face {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			backface-visibility: hidden;
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			background: #ffffff;
+			padding: 12px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			text-align: center;
+			line-height: 1.4;
+		}
+
+		.flashcard-face.back {
+			transform: rotateY(180deg);
+			background: var(--primary-soft);
+		}
+
+		.quiz-item {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 10px;
+			margin-bottom: 10px;
+			background: #fff;
+		}
+
+		.quiz-question {
+			margin-bottom: 8px;
+			font-weight: 600;
+		}
+
+		.quiz-options {
+			display: grid;
+			gap: 6px;
+		}
+
+		.quiz-option {
+			border: 1px solid var(--border);
+			background: #f8fafc;
+			color: var(--text);
+			text-align: left;
+		}
+
+		.quiz-option.correct {
+			background: #dcfce7;
+			color: var(--ok);
+			border-color: #86efac;
+		}
+
+		.quiz-option.incorrect {
+			background: #fee2e2;
+			color: var(--wrong);
+			border-color: #fca5a5;
+		}
+
+		.usage-grid {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 10px;
+		}
+
+		.metric {
+			border: 1px solid var(--border);
+			border-radius: 10px;
+			padding: 10px;
+			text-align: center;
+			background: #fff;
+		}
+
+		.metric .label {
+			color: var(--muted);
+			font-size: 0.85rem;
+		}
+
+		.metric .value {
+			margin-top: 4px;
+			font-size: 1.45rem;
+			font-weight: 700;
+		}
+
+		.status {
+			margin-top: 8px;
+			color: var(--muted);
+			font-size: 0.9rem;
+			min-height: 18px;
+		}
+
+		@media (max-width: 740px) {
+			.container {
+				padding: 14px;
+			}
+
+			.doc-name {
+				max-width: 150px;
+			}
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<header>
+			<h1>Corpus Forge</h1>
+			<div class="subtitle">Upload files, query your active corpus, and generate learning artifacts.</div>
+		</header>
+
+		<div class="grid">
+			<section>
+				<h2>1) Upload</h2>
+				<div class="row">
+					<input id="uploadFile" type="file" accept=".pdf,.txt,.md,.py,.js">
+					<button id="uploadBtn">Upload</button>
+				</div>
+				<div id="uploadStatus" class="status"></div>
+			</section>
+
+			<section>
+				<h2>2) Documents</h2>
+				<div class="row">
+					<button id="refreshDocsBtn" class="secondary">Refresh</button>
+				</div>
+				<div id="documentsList" class="list"></div>
+			</section>
+
+			<section>
+				<h2>3) Chat</h2>
+				<div class="row">
+					<input id="chatQuestion" type="text" placeholder="Ask a question about active documents...">
+				</div>
+				<div class="row">
+					<label for="audienceSelect">Audience:</label>
+					<select id="audienceSelect">
+						<option value="beginner">Beginner</option>
+						<option value="intermediate" selected>Intermediate</option>
+						<option value="expert">Expert</option>
+					</select>
+					<label for="toneSelect">Tone:</label>
+					<select id="toneSelect">
+						<option value="formal" selected>Formal</option>
+						<option value="casual">Casual</option>
+					</select>
+					<button id="chatBtn">Send</button>
+				</div>
+				<div id="chatAnswer" class="output"></div>
+			</section>
+
+			<section>
+				<h2>4) Flashcards</h2>
+				<div class="row">
+					<label for="flashcardsCount">Count:</label>
+					<input id="flashcardsCount" type="number" min="1" max="30" value="5">
+					<button id="flashcardsBtn">Generate</button>
+				</div>
+				<div id="flashcardsContainer" class="cards"></div>
+			</section>
+
+			<section>
+				<h2>5) Quiz</h2>
+				<div class="row">
+					<label for="quizCount">Count:</label>
+					<input id="quizCount" type="number" min="1" max="30" value="5">
+					<button id="quizBtn">Generate</button>
+				</div>
+				<div id="quizContainer"></div>
+			</section>
+
+			<section>
+				<h2>6) Code Review</h2>
+				<div class="row">
+					<button id="codeReviewBtn">Generate Code Review</button>
+				</div>
+				<div id="codeReviewOutput" class="output"></div>
+			</section>
+
+			<section>
+				<h2>7) Usage Dashboard</h2>
+				<div class="row">
+					<button id="refreshUsageBtn" class="secondary">Refresh Usage</button>
+				</div>
+				<div class="usage-grid">
+					<div class="metric">
+						<div class="label">Total Requests</div>
+						<div id="totalRequests" class="value">0</div>
+					</div>
+					<div class="metric">
+						<div class="label">Total Tokens</div>
+						<div id="totalTokens" class="value">0</div>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+
+	<script>
+		const state = {
+			documents: []
+		};
+
+		function activeDocIds() {
+			return state.documents.filter((doc) => Number(doc.is_active) === 1).map((doc) => doc.id);
+		}
+
+		async function fetchJSON(url, options = {}) {
+			const response = await fetch(url, options);
+			const contentType = response.headers.get("content-type") || "";
+			const payload = contentType.includes("application/json") ? await response.json() : await response.text();
+
+			if (!response.ok) {
+				const message = payload && payload.error ? payload.error : `Request failed: ${response.status}`;
+				throw new Error(message);
+			}
+
+			return payload;
+		}
+
+		function setStatus(elementId, text, isError = false) {
+			const el = document.getElementById(elementId);
+			el.textContent = text;
+			el.style.color = isError ? "#b91c1c" : "#065f46";
+		}
+
+		async function loadDocuments() {
+			try {
+				const docs = await fetchJSON("/documents");
+				state.documents = Array.isArray(docs) ? docs : [];
+				renderDocuments();
+			} catch (error) {
+				setStatus("uploadStatus", error.message, true);
+			}
+		}
+
+		function renderDocuments() {
+			const list = document.getElementById("documentsList");
+			list.innerHTML = "";
+
+			if (!state.documents.length) {
+				list.innerHTML = "<div class='status'>No documents uploaded yet.</div>";
+				return;
+			}
+
+			state.documents.forEach((doc) => {
+				const item = document.createElement("div");
+				item.className = "doc-item";
+
+				const meta = document.createElement("div");
+				meta.className = "doc-meta";
+				meta.innerHTML = `
+					<div class="doc-name">${escapeHtml(doc.filename || "Untitled")}</div>
+					<div>
+						<span class="badge ${Number(doc.is_active) === 1 ? "" : "inactive"}">
+							${Number(doc.is_active) === 1 ? "Active" : "Inactive"}
+						</span>
+					</div>
+				`;
+
+				const actions = document.createElement("div");
+				actions.className = "doc-actions";
+
+				const toggleBtn = document.createElement("button");
+				toggleBtn.className = "secondary";
+				toggleBtn.textContent = Number(doc.is_active) === 1 ? "Deactivate" : "Activate";
+				toggleBtn.addEventListener("click", async () => {
+					try {
+						await fetchJSON(`/documents/${doc.id}/toggle`, { method: "POST" });
+						await loadDocuments();
+					} catch (error) {
+						setStatus("uploadStatus", error.message, true);
+					}
+				});
+
+				const deleteBtn = document.createElement("button");
+				deleteBtn.className = "danger";
+				deleteBtn.textContent = "Delete";
+				deleteBtn.addEventListener("click", async () => {
+					if (!confirm(`Delete ${doc.filename}?`)) {
+						return;
+					}
+					try {
+						await fetchJSON(`/documents/${doc.id}`, { method: "DELETE" });
+						await loadDocuments();
+						setStatus("uploadStatus", "Document deleted.");
+					} catch (error) {
+						setStatus("uploadStatus", error.message, true);
+					}
+				});
+
+				actions.appendChild(toggleBtn);
+				actions.appendChild(deleteBtn);
+
+				item.appendChild(meta);
+				item.appendChild(actions);
+				list.appendChild(item);
+			});
+		}
+
+		function escapeHtml(value) {
+			return String(value)
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/\"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+
+		async function uploadDocument() {
+			const fileInput = document.getElementById("uploadFile");
+			const file = fileInput.files[0];
+			if (!file) {
+				setStatus("uploadStatus", "Choose a file first.", true);
+				return;
+			}
+
+			const formData = new FormData();
+			formData.append("file", file);
+
+			try {
+				const result = await fetchJSON("/upload", {
+					method: "POST",
+					body: formData
+				});
+				setStatus("uploadStatus", result.message || "Upload successful.");
+				fileInput.value = "";
+				await loadDocuments();
+			} catch (error) {
+				setStatus("uploadStatus", error.message, true);
+			}
+		}
+
+		async function sendChat() {
+			const question = document.getElementById("chatQuestion").value.trim();
+			if (!question) {
+				document.getElementById("chatAnswer").textContent = "Please enter a question.";
+				return;
+			}
+
+			const docIds = activeDocIds();
+			if (!docIds.length) {
+				document.getElementById("chatAnswer").textContent = "No active documents. Activate at least one document.";
+				return;
+			}
+
+			const audience = document.getElementById("audienceSelect").value;
+			const tone = document.getElementById("toneSelect").value;
+
+			document.getElementById("chatAnswer").textContent = "Thinking...";
+
+			try {
+				const result = await fetchJSON("/chat", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ question, doc_ids: docIds, audience, tone })
+				});
+				document.getElementById("chatAnswer").textContent = result.answer || "No answer.";
+				await refreshUsage();
+			} catch (error) {
+				document.getElementById("chatAnswer").textContent = error.message;
+			}
+		}
+
+		function renderFlashcards(cards) {
+			const container = document.getElementById("flashcardsContainer");
+			container.innerHTML = "";
+
+			if (!Array.isArray(cards) || !cards.length) {
+				container.innerHTML = "<div class='status'>No flashcards generated.</div>";
+				return;
+			}
+
+			cards.forEach((card) => {
+				const wrapper = document.createElement("div");
+				wrapper.className = "flashcard";
+
+				wrapper.innerHTML = `
+					<div class="flashcard-inner">
+						<div class="flashcard-face front">${escapeHtml(card.front || "")}</div>
+						<div class="flashcard-face back">${escapeHtml(card.back || "")}</div>
+					</div>
+				`;
+
+				wrapper.addEventListener("click", () => {
+					wrapper.classList.toggle("flipped");
+				});
+
+				container.appendChild(wrapper);
+			});
+		}
+
+		async function generateFlashcards() {
+			const docIds = activeDocIds();
+			const count = Number(document.getElementById("flashcardsCount").value || 5);
+			if (!docIds.length) {
+				renderFlashcards([]);
+				setStatus("uploadStatus", "No active documents for flashcards.", true);
+				return;
+			}
+
+			try {
+				const result = await fetchJSON("/flashcards", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ doc_ids: docIds, count })
+				});
+				renderFlashcards(result.flashcards || []);
+				await refreshUsage();
+			} catch (error) {
+				setStatus("uploadStatus", error.message, true);
+			}
+		}
+
+		function renderQuiz(items) {
+			const container = document.getElementById("quizContainer");
+			container.innerHTML = "";
+
+			if (!Array.isArray(items) || !items.length) {
+				container.innerHTML = "<div class='status'>No quiz generated.</div>";
+				return;
+			}
+
+			items.forEach((item, index) => {
+				const questionBox = document.createElement("div");
+				questionBox.className = "quiz-item";
+
+				const q = document.createElement("div");
+				q.className = "quiz-question";
+				q.textContent = `${index + 1}. ${item.question || "Question"}`;
+
+				const optionsWrap = document.createElement("div");
+				optionsWrap.className = "quiz-options";
+
+				const options = Array.isArray(item.options) ? item.options.slice(0, 4) : [];
+				options.forEach((option) => {
+					const btn = document.createElement("button");
+					btn.className = "quiz-option";
+					btn.textContent = option;
+
+					btn.addEventListener("click", () => {
+						const siblings = Array.from(optionsWrap.querySelectorAll("button"));
+						siblings.forEach((node) => {
+							node.disabled = true;
+							node.classList.remove("correct", "incorrect");
+						});
+
+						const isCorrect = option === item.answer;
+						if (isCorrect) {
+							btn.classList.add("correct");
+						} else {
+							btn.classList.add("incorrect");
+							const correctNode = siblings.find((node) => node.textContent === item.answer);
+							if (correctNode) {
+								correctNode.classList.add("correct");
+							}
+						}
+					});
+
+					optionsWrap.appendChild(btn);
+				});
+
+				questionBox.appendChild(q);
+				questionBox.appendChild(optionsWrap);
+				container.appendChild(questionBox);
+			});
+		}
+
+		async function generateQuiz() {
+			const docIds = activeDocIds();
+			const count = Number(document.getElementById("quizCount").value || 5);
+			if (!docIds.length) {
+				renderQuiz([]);
+				setStatus("uploadStatus", "No active documents for quiz.", true);
+				return;
+			}
+
+			try {
+				const result = await fetchJSON("/quiz", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ doc_ids: docIds, count })
+				});
+				renderQuiz(result.quiz || []);
+				await refreshUsage();
+			} catch (error) {
+				setStatus("uploadStatus", error.message, true);
+			}
+		}
+
+		async function generateCodeReview() {
+			const docIds = activeDocIds();
+			if (!docIds.length) {
+				document.getElementById("codeReviewOutput").textContent = "No active documents for code review.";
+				return;
+			}
+
+			document.getElementById("codeReviewOutput").textContent = "Generating report...";
+
+			try {
+				const result = await fetchJSON("/code-review", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ doc_ids: docIds })
+				});
+				document.getElementById("codeReviewOutput").textContent = result.report || "No report returned.";
+				await refreshUsage();
+			} catch (error) {
+				document.getElementById("codeReviewOutput").textContent = error.message;
+			}
+		}
+
+		async function refreshUsage() {
+			try {
+				const usage = await fetchJSON("/usage");
+				document.getElementById("totalRequests").textContent = Number(usage.total_requests || 0).toLocaleString();
+				document.getElementById("totalTokens").textContent = Number(usage.total_tokens || 0).toLocaleString();
+			} catch (error) {
+				setStatus("uploadStatus", `Usage error: ${error.message}`, true);
+			}
+		}
+
+		function initListeners() {
+			document.getElementById("uploadBtn").addEventListener("click", uploadDocument);
+			document.getElementById("refreshDocsBtn").addEventListener("click", loadDocuments);
+			document.getElementById("chatBtn").addEventListener("click", sendChat);
+			document.getElementById("flashcardsBtn").addEventListener("click", generateFlashcards);
+			document.getElementById("quizBtn").addEventListener("click", generateQuiz);
+			document.getElementById("codeReviewBtn").addEventListener("click", generateCodeReview);
+			document.getElementById("refreshUsageBtn").addEventListener("click", refreshUsage);
+		}
+
+		async function init() {
+			initListeners();
+			await loadDocuments();
+			await refreshUsage();
+		}
+
+		init();
+	</script>
+</body>
+</html>
