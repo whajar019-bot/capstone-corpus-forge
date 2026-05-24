@@ -1,74 +1,235 @@
-# Project Report
-
-#### The Team members
-
-* Names, epita email addresses, and GitHub usernames of all team members.
+# Project Report — Corpus Forge
+## Generative AI for Software Engineering — EPITA 2026
 
 ---
 
-#### Initial Design
+## The Team Members
 
-* initial architecture
-* assumptions
-* technical choices
-
----
-
-#### Engineering Decisions
-
-For each major decision:
-
-* what alternatives were considered?
-* why was this solution chosen?
+- Yaseen Elhamali
+- Ahmad Halabi
+- Walid Hajar
+- Wael Bahi
 
 ---
 
-#### Who Did What?
+## Initial Design
 
-* Document how the project was originally divided among each team member.
-* Document how responsibilities possibly evolved over time.
+### Initial Architecture
+The system is a local web application built with a Python Flask backend 
+and a plain HTML/CSS/JavaScript frontend. The architecture follows a 
+layered design:
 
----
+- **Ingestor layer**: reads and extracts text from uploaded files
+- **Storage layer**: SQLite for document metadata and artifacts, 
+  ChromaDB for vector storage
+- **Retrieval layer**: searches ChromaDB for relevant chunks based 
+  on user queries
+- **AI layer**: sends retrieved context and user prompts to Google Gemini
+- **API layer**: Flask routes connecting frontend to backend
+- **Frontend layer**: single HTML page calling Flask API with fetch()
 
-#### AI Collaboration
+### Assumptions
+- The app runs locally on the user's machine
+- Users have a valid Google Gemini API key
+- Documents are in English
+- The free tier of Google Gemini API is sufficient for development
 
-Document how AI tools were used.
-
-* What tools were used for what purposes?
-* How did AI influence design and implementation decisions?
-* How did AI impact your learning and development process?
-* How did you evaluate AI-generated suggestions?
-* How did you detect and handle AI errors or limitations?
-
----
-
-#### Failures and Iterations
-
-Document:
-
-* what failed?
-* what surprised you?
-* what required redesign?
-
----
-
-#### “When AI Failed or Was Wrong”
-
-Document cases where AI-generated advice, code, or explanations were:
-
-* incomplete
-* misleading
-* incorrect
-* inefficient
-
-Explain how you detected the issue and how you resolved it.
+### Technical Choices
+- **Python + Flask** for backend — recommended by the course, 
+  familiar to the team
+- **SQLite** for persistence — simple, file-based, no server needed
+- **ChromaDB** for vector search — explicitly mentioned in course 
+  requirements, easy local setup
+- **PyMuPDF** for PDF parsing — reliable, well documented
+- **Google Gemini API** — explicitly allowed by the course
+- **Plain HTML/CSS/JS** for frontend — no framework needed, 
+  keeps complexity low
 
 ---
 
-#### Lessons Learned
+## Engineering Decisions
 
-Reflect on:
+### Decision 1 — SQLite over PostgreSQL
+**Alternatives considered:** PostgreSQL, MongoDB
+**Why SQLite:** The app runs locally so there is no need for a 
+server-based database. SQLite is built into Python and requires 
+zero configuration, which fits the local deployment requirement.
 
-* technical growth
-* workflow improvements
-* Strengths and limitations of AI-assisted development
+### Decision 2 — ChromaDB over manual vector search
+**Alternatives considered:** FAISS, manual cosine similarity
+**Why ChromaDB:** It is explicitly mentioned in the course materials 
+as an allowed tool. It handles embedding generation automatically 
+and provides a simple Python API for storing and querying vectors.
+
+### Decision 3 — Flask over Django or FastAPI
+**Alternatives considered:** Django, FastAPI
+**Why Flask:** The course strongly encourages Python backends. 
+Flask is lightweight and well suited for small applications. 
+Django is too heavy for this project size. FastAPI would have 
+added complexity with async programming.
+
+### Decision 4 — Plain HTML/JS over React
+**Alternatives considered:** React, Vue.js
+**Why plain HTML/JS:** The course does not require a specific 
+frontend framework. Plain HTML with fetch() calls is simpler, 
+faster to build, and easier to debug for a first-year project.
+
+### Decision 5 — gemini-2.0-flash over other models
+**Alternatives considered:** gemini-1.5-flash, gemini-1.5-pro
+**Why gemini-2.0-flash:** The original model gemini-1.5-flash 
+was deprecated and returned a 404 error. After researching the 
+Google AI documentation we updated to gemini-2.0-flash which 
+is the current stable model.
+
+---
+
+## Who Did What?
+
+### Original Division
+- **Yaseen Elhamali** — database.py, ingestor.py, retriever.py, 
+  ai_client.py, app.py, index.html, README.md, REPORT.md, JOURNAL.md
+- **[Teammate 2]** — [their contributions]
+- **[Teammate 3]** — [their contributions]
+
+### How Responsibilities Evolved
+[Describe how work shifted during the project if applicable]
+
+---
+
+## AI Collaboration
+
+### Tools Used
+- **VS Code Copilot** — primary AI tool for code generation, 
+  used for all Python modules and the HTML frontend
+
+### How AI Was Used
+Copilot was used as a coding partner throughout the project. 
+For each file, a detailed prompt was written describing exactly 
+what the file needed to do, what functions were required, and 
+what libraries to use. Copilot then generated the initial code 
+which was reviewed, tested, and modified as needed.
+
+All prompts used with Copilot are documented in `prompts_history.md`.
+
+### How AI Influenced Design Decisions
+Copilot read existing files before generating new ones, which 
+helped ensure the function signatures matched between modules. 
+For example when generating app.py, Copilot first read database.py, 
+ingestor.py, retriever.py and ai_client.py to understand the exact 
+function names and parameters before writing the Flask routes.
+
+### How AI Impacted Learning
+Using Copilot accelerated the learning process significantly. 
+Instead of spending hours reading documentation, we could ask 
+Copilot to explain concepts like RAG, ChromaDB embeddings, and 
+Flask routing while simultaneously generating working code. 
+This allowed us to understand the concepts in context.
+
+### How We Evaluated AI Suggestions
+Every piece of code generated by Copilot was tested by running 
+it in the terminal. If it produced errors, the error was analyzed 
+and either fixed manually or a follow-up prompt was sent to Copilot. 
+We never accepted code without testing it first.
+
+### How We Detected and Handled AI Errors
+See the "When AI Failed or Was Wrong" section below.
+
+---
+
+## Failures and Iterations
+
+### What Failed
+- **Google Gemini API quota** — the free tier quota was exhausted 
+  quickly during testing, preventing full end-to-end testing of 
+  the AI features
+- **Wrong model name** — Copilot generated code using 
+  gemini-1.5-flash which was deprecated. This caused 404 errors 
+  that took time to diagnose
+- **File location errors** — several files were created in the 
+  wrong folder (soft_de_prj instead of capstone-corpus-forge), 
+  requiring manual moves
+- **templates folder** — was accidentally created as a file 
+  instead of a directory, requiring deletion and recreation
+
+### What Surprised Us
+- How quickly the free tier API quota runs out with even basic testing
+- How much time is spent on environment setup compared to actual coding
+- How Flask automatically reloads when files change, which caused 
+  confusion when old error messages kept appearing
+
+### What Required Redesign
+- The .env file had to be moved to the correct folder
+- The Gemini model name had to be updated from gemini-1.5-flash 
+  to gemini-2.0-flash
+- The uploads folder had to be deleted and recreated multiple times 
+  due to path conflicts
+
+---
+
+## When AI Failed or Was Wrong
+
+### Case 1 — Wrong Gemini Model Name
+**What happened:** Copilot generated code using `gemini-1.5-flash` 
+as the model name in ai_client.py.
+**Why it was wrong:** This model was deprecated and no longer 
+supported by the Google API v1beta.
+**How we detected it:** The app returned a 404 error when trying 
+to call the API. The terminal showed a clear error message saying 
+the model was not found.
+**How we resolved it:** We used the sed command to replace all 
+occurrences of gemini-1.5-flash with gemini-2.0-flash in ai_client.py.
+
+### Case 2 — Copilot Modified Wrong File
+**What happened:** When asked to create ai_client.py, Copilot 
+modified retriever.py instead, adding 9+ lines of unrelated code.
+**Why it was wrong:** Copilot did not correctly identify which 
+file should be the target of the changes.
+**How we detected it:** We noticed retriever.py had a red 9+ 
+indicator in VS Code showing unexpected changes.
+**How we resolved it:** We deleted retriever.py and recreated 
+it from scratch using a new Copilot prompt, making sure 
+retriever.py was open and active before sending the prompt.
+
+### Case 3 — Missing exist_ok Parameter
+**What happened:** The _ensure_upload_folder() function in app.py 
+raised a FileExistsError even though exist_ok=True was set.
+**Why it was wrong:** The uploads folder already existed as a 
+different type, causing the mkdir call to fail.
+**How we detected it:** The terminal showed a FileExistsError 
+traceback when starting the app.
+**How we resolved it:** We deleted the uploads folder manually 
+and let the app recreate it fresh.
+
+---
+
+## Lessons Learned
+
+### Technical Growth
+- Learned how RAG (Retrieval Augmented Generation) works in practice
+- Learned how vector databases store and search documents
+- Learned how to connect a Python backend to a JavaScript frontend
+- Learned how to read and diagnose Python error tracebacks
+- Learned how API keys, quotas and environment variables work
+- Learned proper Git workflow with meaningful commit messages
+
+### Workflow Improvements
+- Breaking tasks into small files (one module at a time) made 
+  debugging much easier
+- Testing each file independently before connecting them saved time
+- Committing after each working milestone meant we never lost progress
+- Writing prompts in detail before sending to Copilot produced 
+  much better results
+
+### Strengths of AI-Assisted Development
+- Copilot significantly accelerated boilerplate code generation
+- Copilot could read existing files and match function signatures 
+  automatically
+- Using AI as a tutor to explain concepts while generating code 
+  was very effective
+
+### Limitations of AI-Assisted Development
+- Copilot sometimes modified the wrong file
+- Copilot used deprecated library versions without warning
+- AI-generated code still requires careful testing and review
+- AI cannot replace understanding — you still need to know what 
+  the code does to debug it effectively
