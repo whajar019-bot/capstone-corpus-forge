@@ -28,7 +28,7 @@ def init_client():
 		raise RuntimeError("GOOGLE_API_KEY is not set in the environment.")
 
 	genai.configure(api_key=api_key)
-	_model = genai.GenerativeModel("gemini-2.0-flash")
+	_model = genai.GenerativeModel("gemini-1.5-flash-latest")
 	_client_initialized = True
 	return _model
 
